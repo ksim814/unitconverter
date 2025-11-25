@@ -86,8 +86,17 @@ dependencies {
 
 }
 
-tasks.register<JacocoReport>("jacocoDebugReport") {
+tasks.withType<Test> {
+    useJUnitPlatform()
 
+    finalizedBy("jacocoTestReport")
+}
+
+jacoco {
+    toolVersion = "0.8.10"
+}
+
+tasks.register<JacocoReport>("jacocoTestReport") {
     dependsOn("testDebugUnitTest")
 
     reports {
@@ -95,34 +104,11 @@ tasks.register<JacocoReport>("jacocoDebugReport") {
         html.required.set(true)
     }
 
-    val fileFilter = listOf(
-        "**/R.class",
-        "**/R$*.class",
-        "**/BuildConfig.*",
-        "**/Manifest*.*",
-        "**/*Test*.*",
-        "android/**/*.*"
-    )
-
-    val debugTree = fileTree("${buildDir}/intermediates/javac/debug") {
-        exclude(fileFilter)
+    val fileTree = fileTree("${project.buildDir}/intermediates/javac/debug") {
+        include("**/*.class")
     }
 
-    val kotlinDebugTree = fileTree("${buildDir}/tmp/kotlin-classes/debug") {
-        exclude(fileFilter)
-    }
-
-    val mainSrc = "$projectDir/src/main/java"
-
-    sourceDirectories.setFrom(files(mainSrc))
-    classDirectories.setFrom(files(debugTree, kotlinDebugTree))
-
-    executionData.setFrom(
-        fileTree(buildDir) {
-            include(
-                "jacoco/testDebugUnitTest.exec",
-                "outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec"
-            )
-        }
-    )
+    classDirectories.setFrom(fileTree)
+    sourceDirectories.setFrom(files("src/main/java", "src/main/kotlin"))
+    executionData.setFrom(files("${buildDir}/jacoco/testDebugUnitTest.exec"))
 }

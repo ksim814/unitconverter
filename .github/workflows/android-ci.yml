@@ -30,7 +30,7 @@ jobs:
         run: ./gradlew testDebugUnitTest
 
       - name: Run coverage
-        run: ./gradlew jacocoTestReport
+        run: ./gradlew app:jacocoTestReport
 
       - name: Upload Test Reports
         uses: actions/upload-artifact@v4
